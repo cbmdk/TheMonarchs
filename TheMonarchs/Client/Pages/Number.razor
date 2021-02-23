@@ -1,0 +1,24 @@
+﻿@page "/number"
+@using TheMonarchs.Shared
+@using Microsoft.AspNetCore.Components
+@using System.Net.Http
+@inject HttpClient Http
+<h3>Number of Monarchs</h3>
+
+@if (_monarchs == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    @_monarchs
+}
+
+@code {
+    private int _monarchs { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _monarchs = await Http.GetFromJsonAsync<int>("api/monarchs/number");
+    }
+}

@@ -1,0 +1,42 @@
+﻿@page "/monarchs"
+@using TheMonarchs.Shared
+@using Microsoft.AspNetCore.Components
+@using System.Net.Http
+@inject HttpClient Http
+<h3>Monarchs</h3>
+
+@if (_monarchs == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>House</th>
+            <th>Ruling years</th>
+            <th>Kingdom</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var monarch in _monarchs)
+        {
+            <tr>
+                <td>@monarch.nm</td>
+                <td>@monarch.hse</td>
+                <td>@monarch.yrs</td>
+                <td>@monarch.cty</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private Monarch[] _monarchs { get; set; }
+
+    protected override async Task OnInitializedAsync() =>
+    _monarchs = await Http.GetFromJsonAsync<Monarch[]>("api/monarchs");
+}

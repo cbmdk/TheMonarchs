@@ -1,0 +1,26 @@
+﻿@page "/longestrule"
+@using TheMonarchs.Shared
+@using Microsoft.AspNetCore.Components
+@using System.Net.Http
+@inject HttpClient Http
+<h3>Longest ruling Monarch</h3>
+
+@if (_monarchs == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h2>The longest ruling monarch: <b>@_monarchs.nm</b></h2>
+    <h2>Ruling for: <b>@_monarchs.rule</b> years</h2>
+    
+}
+
+@code {
+    private Monarch _monarchs { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _monarchs = await Http.GetFromJsonAsync<Monarch>("api/monarchs/longestrule");
+    }
+}
