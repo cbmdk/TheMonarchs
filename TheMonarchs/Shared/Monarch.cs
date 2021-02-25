@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace TheMonarchs.Shared
 {
@@ -13,13 +9,12 @@ namespace TheMonarchs.Shared
         public string cty { get; set; }
         public string hse { get; set; }
         public string yrs { get; set; }
-
         public int rule { get; set; }
     }
 
-    public class House
+    public class CommonName
     {
-        public string HouseName { get; set; }
-        public List<Monarch> Monarchs { get; set; }
+        public string name { get; set; }
+        public int occurence { get; set; }
     }
 }

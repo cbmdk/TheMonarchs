@@ -12,98 +12,77 @@ namespace TheMonarchs.Server.Controllers
 
     public class MonarchsController : Controller
     {
-        private IMemoryCache _cache;
+        private List<Monarch> MonarchData { get; set; }
 
         public MonarchsController(IMemoryCache cache)
         {
-            _cache = cache;
+            MonarchData = cache.Get<List<Monarch>>("monarchs");
+            
         }
 
         [HttpGet]
         public ActionResult GetMonarchs()
         {
-            var data = _cache.Get<List<Monarch>>("monarchs");
-            return Ok(data);
+            return Ok(MonarchData);
         }
 
         [HttpGet]
         [Route("[action]")]
         public ActionResult Firstnames()
         {
-            var firstnames = new List<char>();
-            var data = _cache.Get<List<Monarch>>("monarchs");
-            firstnames = data.SelectMany(x => x.nm).ToList();
-            return Ok(firstnames);
+            var firstNames = new List<string>();
+            foreach (var entry in MonarchData)
+            {
+                var index = entry.nm.IndexOf(" ", StringComparison.Ordinal);
+                if (index == -1)
+                {
+                    firstNames.Add(entry.nm);
+                }
+                else
+                {
+                    firstNames.Add(entry.nm.Substring(0, index));
+                }
+            }
+
+            var firstNameList = firstNames.GroupBy(first => first)
+                .OrderBy(grp => grp.Key)
+                .Select(grp => new
+                {
+                    name = grp.Key, occurence = grp.Count()
+                });
+            
+            return Ok(firstNameList.OrderByDescending(f=>f.occurence).First());
         }
 
         [HttpGet]
         [Route("[action]")]
         public ActionResult Number()
         {
-            var data = _cache.Get<List<Monarch>>("monarchs");
-            return Ok(data.Count.ToString());
+            return Ok(MonarchData.Count.ToString());
         }
 
         [HttpGet]
         [Route("[action]")]
         public ActionResult LongestRule()
         {
-            var data = _cache.Get<List<Monarch>>("monarchs");
-            var rulingYears = new List<Monarch>();
-            foreach (var entry in data)
-            {
-                int years = 0;
-                if (entry.yrs.Contains('-'))
-                {
-                    var validatedYears = CheckYrsValidity(entry.yrs);
-                    int[] year = Array.ConvertAll(validatedYears.Split('-'), int.Parse);
-                    var item = new Monarch();
-                    item = entry;
-                    item.rule = year[1] - year[0];
-                    rulingYears.Add(item);
-                }
-                else
-                {
-                    var item = entry;
-                    item.rule = 0;
-                    rulingYears.Add(item);
-                }
-            }
-            
+            var rulingYears = AddRulingYearsToData();
+
             return Ok(rulingYears.OrderByDescending(r=>r.rule).First());
         }
-
+        
         [HttpGet]
         [Route("[action]")]
 
         public ActionResult LongestRulingHouse()
         {
-            var data = _cache.Get<List<Monarch>>("monarchs");
-            var houses = data.GroupBy(house => house.hse);
-            var rulingHouses = new List<House>();
-            var monarchs = new List<Monarch>();
-            foreach (var house in houses)
-            {
-                foreach (var entry in house)
+            var rulingYears = AddRulingYearsToData();
+            var houseRuling = rulingYears.GroupBy(house => house.hse)
+                .Select(houseGroup => new
                 {
-                    int years = 0;
-                    if (entry.yrs.Contains('-'))
-                    {
-                        var validatedYears = CheckYrsValidity(entry.yrs);
-                        int[] year = Array.ConvertAll(validatedYears.Split('-'), int.Parse);
-                        var item = new Monarch();
-                        item = entry;
-                        item.rule = item.rule = year[1] - year[0];
-                        monarchs.Add(item);
-                    }
-                }
-                rulingHouses.Add(new House
-                {
-                    HouseName = house.Key,
-                    Monarchs = monarchs
+                    hse = houseGroup.Key,
+                    rule = houseGroup.Sum(x => x.rule)
                 });
-            }
-            return Ok(houses);
+            return Ok(houseRuling.OrderByDescending(r=>r.rule).First());
         }
 
         private string CheckYrsValidity(string data)
@@ -114,10 +93,29 @@ namespace TheMonarchs.Server.Controllers
             if (right == "")
             {
                 right = DateTime.Now.Year.ToString();
-                return $"{left}-{right}";
             }
-            return data;
+            return $"{left}-{right}";
         }
 
+        private List<Monarch> AddRulingYearsToData()
+        {
+            var rulingYears = new List<Monarch>();
+            foreach (var entry in MonarchData)
+            {
+                if (entry.yrs.Contains('-'))
+                {
+                    var validatedYears = CheckYrsValidity(entry.yrs);
+                    var year = Array.ConvertAll(validatedYears.Split('-'), int.Parse);
+                    entry.rule = year[1] - year[0];
+                    rulingYears.Add(entry);
+                }
+                else
+                {
+                    entry.rule = 0;
+                    rulingYears.Add(entry);
+                }
+            }
+            return rulingYears;
+        }
     }
 }

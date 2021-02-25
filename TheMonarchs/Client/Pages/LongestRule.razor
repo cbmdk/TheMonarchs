@@ -3,7 +3,7 @@
 @using Microsoft.AspNetCore.Components
 @using System.Net.Http
 @inject HttpClient Http
-<h3>Longest ruling Monarch</h3>
+<h3>Longest ruling Monarch and House</h3>
 
 @if (_monarchs == null)
 {
@@ -11,16 +11,29 @@
 }
 else
 {
-    <h2>The longest ruling monarch: <b>@_monarchs.nm</b></h2>
-    <h2>Ruling for: <b>@_monarchs.rule</b> years</h2>
-    
+    <h4>The longest ruling monarch: <b>@_monarchs.nm</b></h4>
+    <h4>Ruling for: <b>@_monarchs.rule</b> years</h4>
+
+}
+
+@if (_house == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h4>The longest ruling house: <b>@_house.hse</b></h4>
+    <h4>Ruling for: <b>@_house.rule</b> years</h4>
+
 }
 
 @code {
     private Monarch _monarchs { get; set; }
+    private Monarch _house { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         _monarchs = await Http.GetFromJsonAsync<Monarch>("api/monarchs/longestrule");
+        _house = await Http.GetFromJsonAsync<Monarch>("api/monarchs/longestrulinghouse");
     }
 }

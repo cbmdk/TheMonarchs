@@ -1,0 +1,28 @@
+﻿@page "/mostcommonname"
+@using TheMonarchs.Shared
+@using Microsoft.AspNetCore.Components
+@using System.Net.Http
+@inject HttpClient Http
+<h3>Most common firstname</h3>
+
+@if (_name == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h4>The most common firstname was: <b>@_name.name</b></h4>
+    <h4># of occurences: <b>@_name.occurence</b> times</h4>
+
+}
+
+@code {
+    private CommonName _name { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        _name = await Http.GetFromJsonAsync<CommonName>("api/monarchs/Firstnames");
+
+    }
+}

@@ -33,15 +33,15 @@ namespace TheMonarchs.Server
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IMemoryCache cache)
         {
-
+            // setting up cache for easy data access
             var items = new List<Monarch>();
             using (StreamReader file = File.OpenText("data/monarchs.json"))
             {
                 JsonSerializer serializer = new JsonSerializer();
                 items = (List<Monarch>)serializer.Deserialize(file, typeof(IList<Monarch>));
             }
-
             cache.Set("monarchs", items);
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
